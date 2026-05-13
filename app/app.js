@@ -47,7 +47,7 @@ function threeNodeToTreeData(node) {
 	}
 	return data;
 }
-let treeRefresh2 = () => {};
+let treeRefresh2 = () => { };
 
 let renderer = new StudioLiteRenderer({
 	get width() {
@@ -144,7 +144,7 @@ async function start() {
 	status.innerText = "Busy";
 	rendering = false;
 	titleBar.classList.add("active");
-	try { document.body.removeChild(document.body.querySelector("#remoteload")); } catch (ignored) {};
+	try { document.body.removeChild(document.body.querySelector("#remoteload")); } catch (ignored) { };
 	document.body.removeChild(sal);
 	sal = null;
 	msg.querySelector("span").innerText = "Loading Place. Please wait...";
@@ -152,7 +152,7 @@ async function start() {
 	const url = new URL(file, window.location.href);
 	try {
 		if (typeof file === "string") {
-			print (`DataModel Loading ${url}`);
+			print(`DataModel Loading ${url}`);
 			placeName = url.href.split("/").pop();
 			status.innerText = `Fetching ${placeName}`;
 			let fileData = null;
@@ -170,7 +170,7 @@ async function start() {
 			status.innerText = `Loading ${placeName}`;
 			await sleep(200);
 		} else {
-			print (`DataModel Loading ${file.name}`);
+			print(`DataModel Loading ${file.name}`);
 			placeName = file.name;
 			status.innerText = `Fetching ${placeName}`;
 			window.data = await file.arrayBuffer();
@@ -216,9 +216,11 @@ async function start() {
 		renderer.removeSelectionBoxesIfNeeded();
 	})
 
-	$(".tree").jstree({'core' : {
-		'data' : jsTreeData
-	}});
+	$(".tree").jstree({
+		'core': {
+			'data': jsTreeData
+		}
+	});
 
 	let treeRef = $(".tree").jstree(true);
 
@@ -228,9 +230,9 @@ async function start() {
 			if (partClasses.indexOf(instance.ClassName) !== -1) {
 				try {
 					renderer.zoomTo(instance.CFrame || instance.CoordinateFrame, false);
-				} catch (ignored) {};
+				} catch (ignored) { };
 			}
-		} catch (ignored) {};
+		} catch (ignored) { };
 	};
 
 	szoom.setAttribute("aria-disabled", true);
@@ -327,14 +329,16 @@ async function start() {
 						let clr = document.createElement("input");
 						clr.type = "color";
 						clr.disabled = true;
-						clr.value = rgbToHex(val.R*255, val.G*255, val.B*255);
+						clr.value = rgbToHex(val.R * 255, val.G * 255, val.B * 255);
 						two.appendChild(clr);
 					}
 					two.appendChild(objview);
 					objview.id = `objview-${objviewIndex}`;
-					treedatatemp = {'core' : {
-						'data' : objToTreeData(instance[key])
-					}};
+					treedatatemp = {
+						'core': {
+							'data': objToTreeData(instance[key])
+						}
+					};
 				} else if ([true, false].indexOf(instance[key]) !== -1) {
 					let chk = document.createElement("input");
 					chk.disabled = "true";
@@ -360,7 +364,7 @@ async function start() {
 					opt.selected = true;
 					sel.disabled = true;
 					sel.appendChild(opt);
-					two.appendChild(sel);					
+					two.appendChild(sel);
 				} else {
 					two.innerText = parsePropValue(key, instance[key]);
 				}
@@ -546,12 +550,12 @@ buttons[0].addEventListener("click", async () => {
 		doLoad = null;
 		file = txt.value;
 		close(); close = null;
-		try { document.body.removeChild(dlg); } catch (ignored) {};
+		try { document.body.removeChild(dlg); } catch (ignored) { };
 		dlg = null; txt = null; btn = null;
 		start();
 	};
 	btn.addEventListener("click", doLoad);
-	let keyup = ({key}) => {
+	let keyup = ({ key }) => {
 		if (!btn.disabled && key === "Enter") doLoad();
 	};
 	txt.addEventListener("keyup", keyup);
@@ -573,7 +577,104 @@ browse.addEventListener("input", () => {
 
 window.addEventListener("resize", () => {
 	renderer.resize();
+	applyResponsiveLayout();
 })
+
+// --- Mobile / responsive panel state management ---
+const rightPaneEl = document.getElementById('rightPane');
+const explorerPanelEl = rightPaneEl ? rightPaneEl.querySelector('.window') : null;
+const propertiesPanelEl = document.getElementById('propertiesPanel');
+const consolePanelEl = document.getElementById('consolePanel');
+const mobileToolbar = document.getElementById('mobileToolbar');
+const mobileBtnExplorer = document.getElementById('mobile-toggle-explorer');
+const mobileBtnProperties = document.getElementById('mobile-toggle-properties');
+const mobileBtnConsole = document.getElementById('mobile-toggle-console');
+
+let ExplorerOpen = true;
+let PropertiesOpen = true;
+let ConsoleOpen = true;
+
+function isMobile() {
+	return window.innerWidth < 768;
+}
+
+function showEl(el) { if (!el) return; el.classList.remove('panel-hidden'); }
+function hideEl(el) { if (!el) return; el.classList.add('panel-hidden'); }
+
+function applyResponsiveLayout() {
+	// mobile: only one panel visible at a time (tabs behavior)
+	if (isMobile()) {
+		if (mobileToolbar) mobileToolbar.setAttribute('aria-hidden', 'false');
+		// determine which panel to show: priority Explorer -> Properties -> Console
+		if (ExplorerOpen) {
+			showEl(explorerPanelEl);
+			showEl(rightPaneEl);
+			hideEl(propertiesPanelEl);
+			hideEl(consolePanelEl);
+		} else if (PropertiesOpen) {
+			hideEl(explorerPanelEl);
+			showEl(rightPaneEl);
+			showEl(propertiesPanelEl);
+			hideEl(consolePanelEl);
+		} else if (ConsoleOpen) {
+			hideEl(explorerPanelEl);
+			hideEl(propertiesPanelEl);
+			hideEl(rightPaneEl);
+			showEl(consolePanelEl);
+		} else {
+			// default fallback
+			ExplorerOpen = true;
+			applyResponsiveLayout();
+		}
+	} else {
+		// desktop: toolbar hidden, panels independent
+		if (mobileToolbar) mobileToolbar.setAttribute('aria-hidden', 'true');
+		// rightPane contains explorer + properties; show/hide each according to state
+		if (ExplorerOpen) showEl(explorerPanelEl); else hideEl(explorerPanelEl);
+		if (PropertiesOpen) showEl(propertiesPanelEl); else hideEl(propertiesPanelEl);
+		if (ConsoleOpen) showEl(consolePanelEl); else hideEl(consolePanelEl);
+		// ensure rightPane is visible if either explorer or properties is open
+		if (ExplorerOpen || PropertiesOpen) showEl(rightPaneEl); else hideEl(rightPaneEl);
+	}
+	updateMobileButtons();
+}
+
+function togglePanel(panelName) {
+	if (isMobile()) {
+		// mobile: opening one closes others
+		ExplorerOpen = (panelName === 'explorer');
+		PropertiesOpen = (panelName === 'properties');
+		ConsoleOpen = (panelName === 'console');
+	} else {
+		// desktop: toggle independent
+		if (panelName === 'explorer') ExplorerOpen = !ExplorerOpen;
+		if (panelName === 'properties') PropertiesOpen = !PropertiesOpen;
+		if (panelName === 'console') ConsoleOpen = !ConsoleOpen;
+	}
+	applyResponsiveLayout();
+}
+
+function updateMobileButtons() {
+	if (!mobileBtnExplorer || !mobileBtnProperties || !mobileBtnConsole) return;
+	// active when the panel would be visible
+	if (ExplorerOpen && isMobile()) mobileBtnExplorer.classList.add('active'); else mobileBtnExplorer.classList.remove('active');
+	if (PropertiesOpen && isMobile()) mobileBtnProperties.classList.add('active'); else mobileBtnProperties.classList.remove('active');
+	if (ConsoleOpen && isMobile()) mobileBtnConsole.classList.add('active'); else mobileBtnConsole.classList.remove('active');
+}
+
+if (mobileBtnExplorer) mobileBtnExplorer.addEventListener('click', () => togglePanel('explorer'));
+if (mobileBtnProperties) mobileBtnProperties.addEventListener('click', () => togglePanel('properties'));
+if (mobileBtnConsole) mobileBtnConsole.addEventListener('click', () => togglePanel('console'));
+
+// initialize responsive layout on load
+window.addEventListener('load', () => {
+	// default: keep panels visible on desktop; on mobile show only explorer
+	if (isMobile()) {
+		ExplorerOpen = true; PropertiesOpen = false; ConsoleOpen = false;
+	}
+	applyResponsiveLayout();
+	updateMobileButtons();
+});
 
 const tree = document.body.querySelector(".tree");
 const tree2 = document.body.querySelector(".tree2");
@@ -606,9 +707,11 @@ scenetab.addEventListener("mousedown", () => {
 datamodeltab.disabled = false;
 scenetab.disabled = false;
 
-$(".tree2").jstree({'core' : {
-	'data': []
-}});
+$(".tree2").jstree({
+	'core': {
+		'data': []
+	}
+});
 
 let treeRef2 = $(".tree2").jstree(true);
 let propTable = document.body.querySelector(".properties > table > tbody");
@@ -623,7 +726,7 @@ treeRefresh2 = () => {
 
 $('.tree2').on("changed.jstree", async function (e, data) {
 	let node = treeRef2.get_node(data.selected[0]).original;
-	if (node) {} else return;
+	if (node) { } else return;
 	node = node.node.object;
 	document.body.querySelector("#propertiesTitle").innerText = `Properties - ${node.type} "${node.name ? node.name : node.type}"`;
 	let keys = Object.keys(node);
@@ -642,9 +745,11 @@ $('.tree2').on("changed.jstree", async function (e, data) {
 				let objview = document.createElement("div");
 				two.appendChild(objview);
 				objview.id = `objview-${objviewIndex}`;
-				treedatatemp = {'core' : {
-					'data' : objToTreeData(node[key])
-				}};
+				treedatatemp = {
+					'core': {
+						'data': objToTreeData(node[key])
+					}
+				};
 			} else if (key === "color") {
 				let clr = document.createElement("input");
 				clr.type = "color";

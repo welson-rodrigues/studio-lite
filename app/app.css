@@ -21,6 +21,29 @@ dialog {
     z-index: 2;
 }
 
+/* mobile toolbar */
+.mobile-toolbar {
+    display: none;
+}
+
+.mobile-toolbar .mobile-btn {
+    padding: 10px 12px;
+    font-size: 16px;
+    border: none;
+    background: var(--control-background, #eee);
+    flex: 1 1 auto;
+}
+
+.mobile-btn.active {
+    background: var(--progress-color-paused, #ffd54f);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08) inset;
+}
+
+/* utility class to hide panels via JS/CSS */
+.panel-hidden {
+    display: none !important;
+}
+
 .console {
     position: absolute;
     height: calc(200px - 22px);
@@ -47,13 +70,16 @@ dialog {
     overflow: hidden;
 }
 
-.tree, .tree2, .properties {
+.tree,
+.tree2,
+.properties {
     --height: calc(50vh - 29px - 14.5px - 17px - 13.5px - 6px + 2px);
     overflow: scroll;
     width: 385px;
 }
 
-.tree, .tree2 {
+.tree,
+.tree2 {
     height: calc(var(--height) - 23px);
 }
 
@@ -65,18 +91,20 @@ table {
     min-width: 100%;
 }
 
-th, td {
+th,
+td {
     text-align: left;
 }
 
 /* taken from 7.css "highlighted" rule */
-table > tbody > tr:hover {
+table>tbody>tr:hover {
     background: var(--item-highlighted-background);
     border: var(--listview-border) var(--item-highlighted-border);
     border-radius: var(--border-radius);
 }
 
-.message, .onboarding {
+.message,
+.onboarding {
     position: absolute;
     width: calc(100vw - 400px);
     height: calc(100vh - 200px - 29px - 29px);
@@ -87,7 +115,7 @@ table > tbody > tr:hover {
     color: white;
     font-size: 22px;
     text-shadow: 2px 0 #000, -2px 0 #000, 0 2px #000, 0 -2px #000,
-         1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000;
+        1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000;
     cursor: url(../content/Textures/ArrowFarCursor.png), auto;
 }
 
@@ -95,17 +123,18 @@ table > tbody > tr:hover {
     flex-direction: column;
 }
 
-.onboarding > h1 {
+.onboarding>h1 {
     width: fit-content;
     font-size: 44px;
 }
 
-.onboarding > button {
+.onboarding>button {
     font-size: 40px;
 }
 
-.onboarding > :is(button, input, label),
-#stats, #stats > * {
+.onboarding> :is(button, input, label),
+#stats,
+#stats>* {
     cursor: url(../content/Textures/ArrowCursor.png), auto !important;
 }
 
@@ -134,7 +163,7 @@ pre {
     border: none;
 }
 
-body > .title-bar {
+body>.title-bar {
     position: absolute;
     width: calc(100vw - 14px);
     z-index: 10002;
@@ -142,12 +171,59 @@ body > .title-bar {
     left: 0;
 }
 
-body > ul[role=menubar] {
+body>ul[role=menubar] {
     position: absolute;
     top: 29px;
     left: 0;
     width: 100vw;
     z-index: 10002;
+}
+
+/* Responsive adjustments for mobile devices */
+@media (max-width: 767px) {
+    .mobile-toolbar {
+        display: flex;
+        position: fixed;
+        bottom: 25px;
+        left: 0;
+        width: 100vw;
+        z-index: 10003;
+        gap: 4px;
+        padding: 6px;
+        box-sizing: border-box;
+        justify-content: space-between;
+        background: rgba(255, 255, 255, 0.95);
+    }
+
+    .rightPane {
+        position: fixed;
+        top: 56px;
+        left: 0;
+        width: 100vw;
+        height: calc(100vh - 56px - 80px);
+        z-index: 10002;
+    }
+
+    .console {
+        position: fixed;
+        bottom: 56px;
+        left: 0;
+        width: 100vw;
+        height: calc(40vh);
+        z-index: 10002;
+    }
+
+    /* make tree/properties full width */
+    .tree,
+    .tree2,
+    .properties {
+        width: calc(100vw - 20px);
+    }
+
+    .editor {
+        width: 100vw;
+        left: 0;
+    }
 }
 
 canvas {
@@ -169,17 +245,17 @@ canvas {
     justify-content: center;
 }
 
-.status-bar-field > *[role=progressbar] {
+.status-bar-field>*[role=progressbar] {
     width: 100%;
 }
 
 .marquee.error:before {
-    background: linear-gradient(to right,transparent,var(--progress-color-error),transparent 35%);
+    background: linear-gradient(to right, transparent, var(--progress-color-error), transparent 35%);
 }
 
 /* yellow is not for paused, but for fetching :) */
 .marquee.paused:before {
-    background: linear-gradient(to right,transparent,var(--progress-color-paused),transparent 35%);
+    background: linear-gradient(to right, transparent, var(--progress-color-paused), transparent 35%);
 }
 
 .title-bar-icon {
@@ -205,7 +281,8 @@ canvas {
     font-family: monospace;
 }
 
-.title-bar, .status-bar-field {
+.title-bar,
+.status-bar-field {
     height: 21px;
 }
 
@@ -217,7 +294,15 @@ canvas {
     height: 25px;
 }
 
-.title-bar, *[role=menubar], *[role=tablist], .tree2, .message, .onboarding, .tree, td:first-child, .status-bar {
+.title-bar,
+*[role=menubar],
+*[role=tablist],
+.tree2,
+.message,
+.onboarding,
+.tree,
+td:first-child,
+.status-bar {
     user-select: none;
 }
 
@@ -229,13 +314,14 @@ canvas {
     color: black;
     padding-left: 5px !important;
     padding-right: 5px !important;
-    text-shadow: 0 0 10px #fff,0 0 10px #fff,0 0 10px #fff,0 0 10px #fff,0 0 10px #fff,0 0 10px #fff,0 0 10px #fff,0 0 10px #fff;
+    text-shadow: 0 0 10px #fff, 0 0 10px #fff, 0 0 10px #fff, 0 0 10px #fff, 0 0 10px #fff, 0 0 10px #fff, 0 0 10px #fff, 0 0 10px #fff;
 }
 
 .github::before {
     background: none !important;
 }
 
-.title-bar.active .github, .title-bar.active .github::before {
+.title-bar.active .github,
+.title-bar.active .github::before {
     background: var(--control-background) !important;
 }
