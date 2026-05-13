@@ -131,16 +131,27 @@
 
     <!-- Virtual movement controls for touch/mobile -->
     <div id="mobileMovementControls" class="mobile-movement-controls" aria-hidden="true">
-        <div class="movement-joystick">
-            <button id="mobile-move-forward" class="movement-btn forward" aria-label="Move Forward">▲</button>
-            <div class="movement-middle">
-                <button id="mobile-move-left" class="movement-btn left" aria-label="Move Left">◄</button>
+        <div class="joystick-container">
+            <!-- D-Pad joystick -->
+            <div class="joystick-dpad">
+                <button id="mobile-move-forward" class="movement-btn forward" aria-label="Move Forward">▲</button>
+                <div class="joystick-middle-row">
+                    <button id="mobile-move-left" class="movement-btn left" aria-label="Move Left">◄</button>
+                    <div class="joystick-center"></div>
+                    <button id="mobile-move-right" class="movement-btn right" aria-label="Move Right">►</button>
+                </div>
                 <button id="mobile-move-backward" class="movement-btn backward" aria-label="Move Backward">▼</button>
-                <button id="mobile-move-right" class="movement-btn right" aria-label="Move Right">►</button>
             </div>
-            <div class="movement-vertical">
-                <button id="mobile-move-up" class="movement-btn up" aria-label="Move Up">⬆</button>
-                <button id="mobile-move-down" class="movement-btn down" aria-label="Move Down">⬇</button>
+            <!-- Vertical movement and zoom -->
+            <div class="joystick-side">
+                <div class="vertical-controls">
+                    <button id="mobile-move-up" class="movement-btn up" aria-label="Move Up">⬆</button>
+                    <button id="mobile-move-down" class="movement-btn down" aria-label="Move Down">⬇</button>
+                </div>
+                <div class="zoom-controls">
+                    <button id="mobile-zoom-in" class="zoom-btn zoom-in" aria-label="Zoom In">+</button>
+                    <button id="mobile-zoom-out" class="zoom-btn zoom-out" aria-label="Zoom Out">−</button>
+                </div>
             </div>
         </div>
     </div>

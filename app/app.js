@@ -830,6 +830,98 @@ Object.entries(movementMapping).forEach(([buttonId, keyCode]) => {
 	setupMovementButton(buttonId, keyCode);
 });
 
+// Zoom controls
+const zoomInBtn = document.getElementById('mobile-zoom-in');
+const zoomOutBtn = document.getElementById('mobile-zoom-out');
+const ZOOM_SENSITIVITY = 4;
+const MIN_FOV = 10;
+const MAX_FOV = 120;
+
+function zoom(direction) {
+	if (!renderer || !renderer.camera) return;
+	const camera = renderer.camera;
+	const newFov = Math.max(MIN_FOV, Math.min(MAX_FOV, camera.fov + direction * ZOOM_SENSITIVITY));
+	camera.fov = newFov;
+	camera.updateProjectionMatrix();
+}
+
+if (zoomInBtn) {
+	zoomInBtn.addEventListener('touchstart', (e) => {
+		e.preventDefault();
+		zoom(-1);
+		zoomInBtn.classList.add('pressed');
+	});
+	zoomInBtn.addEventListener('touchend', (e) => {
+		e.preventDefault();
+		zoomInBtn.classList.remove('pressed');
+	});
+	zoomInBtn.addEventListener('mousedown', () => {
+		zoom(-1);
+		zoomInBtn.classList.add('pressed');
+	});
+	zoomInBtn.addEventListener('mouseup', () => zoomInBtn.classList.remove('pressed'));
+	zoomInBtn.addEventListener('mouseleave', () => zoomInBtn.classList.remove('pressed'));
+}
+
+if (zoomOutBtn) {
+	zoomOutBtn.addEventListener('touchstart', (e) => {
+		e.preventDefault();
+		zoom(1);
+		zoomOutBtn.classList.add('pressed');
+	});
+	zoomOutBtn.addEventListener('touchend', (e) => {
+		e.preventDefault();
+		zoomOutBtn.classList.remove('pressed');
+	});
+	zoomOutBtn.addEventListener('mousedown', () => {
+		zoom(1);
+		zoomOutBtn.classList.add('pressed');
+	});
+	zoomOutBtn.addEventListener('mouseup', () => zoomOutBtn.classList.remove('pressed'));
+	zoomOutBtn.addEventListener('mouseleave', () => zoomOutBtn.classList.remove('pressed'));
+}
+
+// Mouse wheel zoom (works on desktop and some mobile browsers)
+window.addEventListener('wheel', (e) => {
+	if (!renderer || !renderer.camera) return;
+	if (e.ctrlKey || e.metaKey) {
+		e.preventDefault();
+		const direction = e.deltaY > 0 ? 1 : -1;
+		zoom(direction);
+	}
+}, { passive: false });
+
+// Pinch-to-zoom support on touch devices
+let lastPinchDistance = 0;
+
+window.addEventListener('touchmove', (e) => {
+	if (e.touches.length !== 2) return;
+	if (!renderer || !renderer.camera) return;
+
+	const touch1 = e.touches[0];
+	const touch2 = e.touches[1];
+	const currentDistance = Math.hypot(
+		touch1.clientX - touch2.clientX,
+		touch1.clientY - touch2.clientY
+	);
+
+	if (lastPinchDistance === 0) {
+		lastPinchDistance = currentDistance;
+		return;
+	}
+
+	const delta = currentDistance - lastPinchDistance;
+	if (Math.abs(delta) > 5) {
+		const direction = delta > 0 ? 1 : -1;
+		zoom(direction * 0.5);
+		lastPinchDistance = currentDistance;
+	}
+}, { passive: false });
+
+window.addEventListener('touchend', () => {
+	lastPinchDistance = 0;
+});
+
 document.addEventListener('fullscreenchange', () => {
 	updateWindowButtons();
 	renderer.resize();
