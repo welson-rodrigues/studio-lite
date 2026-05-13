@@ -19,6 +19,7 @@ dialog {
     background-color: white;
     overflow: hidden;
     z-index: 2;
+    transition: width 240ms ease, left 240ms ease, opacity 180ms ease, transform 240ms ease;
 }
 
 /* mobile toolbar */
@@ -32,6 +33,7 @@ dialog {
     border: none;
     background: var(--control-background, #eee);
     flex: 1 1 auto;
+    transition: background 180ms ease, color 180ms ease, transform 180ms ease;
 }
 
 .mobile-btn.active {
@@ -68,16 +70,27 @@ dialog {
 
 /* utility class to hide panels via JS/CSS */
 .panel-hidden {
-    display: none !important;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.rightPane.panel-hidden {
+    transform: translateX(14px);
+}
+
+.console.panel-hidden {
+    transform: translateY(14px);
 }
 
 .console {
     position: absolute;
-    height: calc(200px - 22px);
+    height: calc(var(--workspace-console-height, 200px) - 22px);
     width: calc(100vw - var(--workspace-right-width, 400px));
-    top: calc(100vh - 206px);
+    top: calc(100vh - var(--workspace-console-height, 200px) - 6px);
     background-color: white;
     overflow: hidden;
+    transition: width 240ms ease, height 240ms ease, top 240ms ease, opacity 180ms ease, transform 240ms ease;
 }
 
 .title {
@@ -134,16 +147,20 @@ table>tbody>tr:hover {
 .onboarding {
     position: absolute;
     width: calc(100vw - var(--workspace-right-width, 400px));
-    height: calc(100vh - 200px - 29px - 29px);
+    height: calc(100vh - var(--workspace-console-height, 200px) - 29px - 29px);
     background-color: rgba(221, 221, 221, .5);
     display: flex;
     justify-content: center;
     align-items: center;
+    text-align: center;
     color: white;
-    font-size: 22px;
+    font-size: clamp(16px, 1.8vw, 22px);
     text-shadow: 2px 0 #000, -2px 0 #000, 0 2px #000, 0 -2px #000,
         1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000;
     cursor: url(../content/Textures/ArrowFarCursor.png), auto;
+    box-sizing: border-box;
+    padding: 16px;
+    transition: width 240ms ease, height 240ms ease, opacity 180ms ease, transform 240ms ease;
 }
 
 .onboarding {
@@ -152,11 +169,13 @@ table>tbody>tr:hover {
 
 .onboarding>h1 {
     width: fit-content;
-    font-size: 44px;
+    max-width: 100%;
+    font-size: clamp(24px, 4vw, 44px);
+    line-height: 1.1;
 }
 
 .onboarding>button {
-    font-size: 40px;
+    font-size: clamp(18px, 3vw, 32px);
 }
 
 .onboarding> :is(button, input, label),
@@ -168,7 +187,7 @@ table>tbody>tr:hover {
 .editor {
     position: absolute;
     width: calc(100vw - var(--workspace-right-width, 400px) - 10px);
-    height: calc(100vh - 215px - 29px - 29px);
+    height: calc(100vh - var(--workspace-console-height, 200px) - 215px - 29px - 29px);
     background-color: white;
     color: black;
     padding: 5px;
@@ -176,6 +195,7 @@ table>tbody>tr:hover {
     font-family: monospace;
     overflow: scroll;
     z-index: 10001;
+    transition: width 240ms ease, height 240ms ease, opacity 180ms ease, transform 240ms ease;
 }
 
 .log {
@@ -196,6 +216,7 @@ body>.title-bar {
     z-index: 10002;
     top: 0;
     left: 0;
+    transition: opacity 180ms ease, transform 240ms ease;
 }
 
 body>ul[role=menubar] {
@@ -204,6 +225,7 @@ body>ul[role=menubar] {
     left: 0;
     width: 100vw;
     z-index: 10002;
+    transition: opacity 180ms ease, transform 240ms ease;
 }
 
 /* Responsive adjustments for mobile devices */
@@ -253,9 +275,39 @@ body>ul[role=menubar] {
     }
 }
 
+body.ui-compact .mobile-toolbar,
+body.ui-compact .desktop-toolbar,
+body.ui-compact .status-bar,
+body.ui-compact>ul[role=menubar] {
+    display: none !important;
+}
+
+body.ui-compact canvas {
+    margin-top: 0;
+}
+
+body.ui-compact .title-bar {
+    opacity: 1;
+    transform: none;
+}
+
+body.ui-compact .message,
+body.ui-compact .onboarding {
+    font-size: clamp(14px, 1.6vw, 18px);
+}
+
+body.ui-compact .onboarding>h1 {
+    font-size: clamp(20px, 3vw, 34px);
+}
+
+body.ui-compact .onboarding>button {
+    font-size: clamp(16px, 2.5vw, 24px);
+}
+
 canvas {
     margin-top: 58px;
     cursor: url(../content/Textures/ArrowFarCursor.png), auto;
+    transition: width 240ms ease, height 240ms ease, margin-top 240ms ease;
 }
 
 .status-bar {

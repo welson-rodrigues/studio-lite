@@ -629,9 +629,50 @@ const mobileBtnConsole = document.getElementById('mobile-toggle-console');
 const desktopBtnExplorer = document.getElementById('desktop-toggle-explorer');
 const desktopBtnProperties = document.getElementById('desktop-toggle-properties');
 const desktopBtnConsole = document.getElementById('desktop-toggle-console');
+const windowMinimizeButton = document.getElementById('windowMinimizeButton');
+const windowMaximizeButton = document.getElementById('windowMaximizeButton');
+const windowCloseButton = document.getElementById('windowCloseButton');
+
+let compactSnapshot = null;
 
 function showEl(el) { if (!el) return; el.classList.remove('panel-hidden'); }
 function hideEl(el) { if (!el) return; el.classList.add('panel-hidden'); }
+
+function setCompactMode(enabled) {
+	if (enabled) {
+		if (!compactSnapshot) {
+			compactSnapshot = { ExplorerOpen, PropertiesOpen, ConsoleOpen };
+		}
+		ExplorerOpen = false;
+		PropertiesOpen = false;
+		ConsoleOpen = false;
+		document.body.classList.add('ui-compact');
+	} else {
+		document.body.classList.remove('ui-compact');
+		if (compactSnapshot) {
+			ExplorerOpen = compactSnapshot.ExplorerOpen;
+			PropertiesOpen = compactSnapshot.PropertiesOpen;
+			ConsoleOpen = compactSnapshot.ConsoleOpen;
+			compactSnapshot = null;
+		}
+	}
+	applyResponsiveLayout();
+}
+
+async function toggleFullscreen() {
+	try {
+		if (document.fullscreenElement) {
+			await document.exitFullscreen();
+		} else {
+			await document.documentElement.requestFullscreen();
+		}
+	} catch (ignored) { }
+}
+
+function updateWindowButtons() {
+	if (windowMinimizeButton) windowMinimizeButton.classList.toggle('active', document.body.classList.contains('ui-compact'));
+	if (windowMaximizeButton) windowMaximizeButton.classList.toggle('active', !!document.fullscreenElement);
+}
 
 function applyResponsiveLayout() {
 	// mobile: only one panel visible at a time (tabs behavior)
@@ -704,6 +745,7 @@ function updateMobileButtons() {
 	if (desktopBtnConsole) {
 		if (ConsoleOpen) desktopBtnConsole.classList.add('active'); else desktopBtnConsole.classList.remove('active');
 	}
+	updateWindowButtons();
 }
 
 if (mobileBtnExplorer) mobileBtnExplorer.addEventListener('click', () => togglePanel('explorer'));
@@ -712,6 +754,14 @@ if (mobileBtnConsole) mobileBtnConsole.addEventListener('click', () => togglePan
 if (desktopBtnExplorer) desktopBtnExplorer.addEventListener('click', () => togglePanel('explorer'));
 if (desktopBtnProperties) desktopBtnProperties.addEventListener('click', () => togglePanel('properties'));
 if (desktopBtnConsole) desktopBtnConsole.addEventListener('click', () => togglePanel('console'));
+if (windowMinimizeButton) windowMinimizeButton.addEventListener('click', () => setCompactMode(!document.body.classList.contains('ui-compact')));
+if (windowMaximizeButton) windowMaximizeButton.addEventListener('click', () => toggleFullscreen());
+if (windowCloseButton) windowCloseButton.addEventListener('click', () => window.location.reload());
+
+document.addEventListener('fullscreenchange', () => {
+	updateWindowButtons();
+	renderer.resize();
+});
 
 // initialize responsive layout on load
 window.addEventListener('load', () => {
@@ -723,6 +773,7 @@ window.addEventListener('load', () => {
 	applyResponsiveLayout();
 	renderer.resize();
 	updateMobileButtons();
+	updateWindowButtons();
 });
 
 const tree = document.body.querySelector(".tree");
