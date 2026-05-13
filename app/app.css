@@ -45,7 +45,7 @@ dialog {
 .mobile-movement-controls {
     display: none;
     position: fixed;
-    bottom: 100px;
+    bottom: 20px;
     left: 12px;
     z-index: 9999;
     user-select: none;
