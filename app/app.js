@@ -28,6 +28,15 @@ szoom.setAttribute("aria-disabled", true);
 
 var jsTreeData = [];
 
+var ExplorerOpen = true;
+var PropertiesOpen = true;
+var ConsoleOpen = true;
+
+const PANEL_WIDTH = 400;
+const CONSOLE_TOTAL_HEIGHT = 200;
+const TOP_CHROME_HEIGHT = 29 + 29;
+const STATUS_BAR_HEIGHT = 25;
+
 const threeIcons = {
 	"AmbientLight": "Lighting",
 	"DirectionalLight": "Lighting",
@@ -49,12 +58,41 @@ function threeNodeToTreeData(node) {
 }
 let treeRefresh2 = () => { };
 
+function isMobile() {
+	return window.innerWidth < 768;
+}
+
+function getRightPaneWidth() {
+	if (isMobile()) return (ExplorerOpen || PropertiesOpen) ? window.innerWidth : 0;
+	return (ExplorerOpen || PropertiesOpen) ? PANEL_WIDTH : 0;
+}
+
+function getConsoleHeight() {
+	if (!ConsoleOpen) return 0;
+	return isMobile() ? Math.min(Math.round(window.innerHeight * 0.4), CONSOLE_TOTAL_HEIGHT) : CONSOLE_TOTAL_HEIGHT;
+}
+
+function getWorkspaceWidth() {
+	return Math.max(0, window.innerWidth - getRightPaneWidth());
+}
+
+function getWorkspaceHeight() {
+	return Math.max(0, window.innerHeight - TOP_CHROME_HEIGHT - STATUS_BAR_HEIGHT - getConsoleHeight());
+}
+
+function syncLayoutVars() {
+	document.body.style.setProperty("--workspace-right-width", `${getRightPaneWidth()}px`);
+	document.body.style.setProperty("--workspace-console-height", `${getConsoleHeight()}px`);
+	document.body.style.setProperty("--workspace-width", `${getWorkspaceWidth()}px`);
+	document.body.style.setProperty("--workspace-height", `${getWorkspaceHeight()}px`);
+}
+
 let renderer = new StudioLiteRenderer({
 	get width() {
-		return window.innerWidth - 400;
+		return getWorkspaceWidth();
 	},
 	get height() {
-		return window.innerHeight - 200 - 29 - 34;
+		return getWorkspaceHeight();
 	},
 	sharedFunctions: {
 		print: print,
@@ -576,27 +614,21 @@ browse.addEventListener("input", () => {
 })
 
 window.addEventListener("resize", () => {
-	renderer.resize();
 	applyResponsiveLayout();
 })
 
 // --- Mobile / responsive panel state management ---
 const rightPaneEl = document.getElementById('rightPane');
-const explorerPanelEl = rightPaneEl ? rightPaneEl.querySelector('.window') : null;
+const explorerPanelEl = document.getElementById('explorerPanel') || (rightPaneEl ? rightPaneEl.querySelector('.window') : null);
 const propertiesPanelEl = document.getElementById('propertiesPanel');
 const consolePanelEl = document.getElementById('consolePanel');
 const mobileToolbar = document.getElementById('mobileToolbar');
 const mobileBtnExplorer = document.getElementById('mobile-toggle-explorer');
 const mobileBtnProperties = document.getElementById('mobile-toggle-properties');
 const mobileBtnConsole = document.getElementById('mobile-toggle-console');
-
-let ExplorerOpen = true;
-let PropertiesOpen = true;
-let ConsoleOpen = true;
-
-function isMobile() {
-	return window.innerWidth < 768;
-}
+const desktopBtnExplorer = document.getElementById('desktop-toggle-explorer');
+const desktopBtnProperties = document.getElementById('desktop-toggle-properties');
+const desktopBtnConsole = document.getElementById('desktop-toggle-console');
 
 function showEl(el) { if (!el) return; el.classList.remove('panel-hidden'); }
 function hideEl(el) { if (!el) return; el.classList.add('panel-hidden'); }
@@ -636,6 +668,8 @@ function applyResponsiveLayout() {
 		// ensure rightPane is visible if either explorer or properties is open
 		if (ExplorerOpen || PropertiesOpen) showEl(rightPaneEl); else hideEl(rightPaneEl);
 	}
+	syncLayoutVars();
+	if (renderer && renderer.resize) renderer.resize();
 	updateMobileButtons();
 }
 
@@ -660,11 +694,24 @@ function updateMobileButtons() {
 	if (ExplorerOpen && isMobile()) mobileBtnExplorer.classList.add('active'); else mobileBtnExplorer.classList.remove('active');
 	if (PropertiesOpen && isMobile()) mobileBtnProperties.classList.add('active'); else mobileBtnProperties.classList.remove('active');
 	if (ConsoleOpen && isMobile()) mobileBtnConsole.classList.add('active'); else mobileBtnConsole.classList.remove('active');
+	// update desktop toolbar buttons if present (reflect state)
+	if (desktopBtnExplorer) {
+		if (ExplorerOpen) desktopBtnExplorer.classList.add('active'); else desktopBtnExplorer.classList.remove('active');
+	}
+	if (desktopBtnProperties) {
+		if (PropertiesOpen) desktopBtnProperties.classList.add('active'); else desktopBtnProperties.classList.remove('active');
+	}
+	if (desktopBtnConsole) {
+		if (ConsoleOpen) desktopBtnConsole.classList.add('active'); else desktopBtnConsole.classList.remove('active');
+	}
 }
 
 if (mobileBtnExplorer) mobileBtnExplorer.addEventListener('click', () => togglePanel('explorer'));
 if (mobileBtnProperties) mobileBtnProperties.addEventListener('click', () => togglePanel('properties'));
 if (mobileBtnConsole) mobileBtnConsole.addEventListener('click', () => togglePanel('console'));
+if (desktopBtnExplorer) desktopBtnExplorer.addEventListener('click', () => togglePanel('explorer'));
+if (desktopBtnProperties) desktopBtnProperties.addEventListener('click', () => togglePanel('properties'));
+if (desktopBtnConsole) desktopBtnConsole.addEventListener('click', () => togglePanel('console'));
 
 // initialize responsive layout on load
 window.addEventListener('load', () => {
@@ -672,7 +719,9 @@ window.addEventListener('load', () => {
 	if (isMobile()) {
 		ExplorerOpen = true; PropertiesOpen = false; ConsoleOpen = false;
 	}
+	syncLayoutVars();
 	applyResponsiveLayout();
+	renderer.resize();
 	updateMobileButtons();
 });
 

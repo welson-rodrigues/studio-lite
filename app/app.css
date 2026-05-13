@@ -12,10 +12,10 @@ dialog {
 
 .rightPane {
     height: calc(100vh - 29px - 29px - 27px + 4px);
-    width: 400px;
+    width: var(--workspace-right-width, 400px);
     position: absolute;
     top: 56px;
-    left: calc(100vw - 400px);
+    left: calc(100vw - var(--workspace-right-width, 400px));
     background-color: white;
     overflow: hidden;
     z-index: 2;
@@ -39,6 +39,33 @@ dialog {
     box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08) inset;
 }
 
+/* Desktop toolbar (visible on large screens) */
+.desktop-toolbar {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.desktop-toolbar .desktop-btn {
+    padding: 4px 8px;
+    font-size: 13px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.desktop-toolbar .desktop-btn.active {
+    background: var(--control-background, #e6e6e6);
+    border-radius: 3px;
+}
+
+/* hide desktop toolbar on small screens (mobile) */
+@media (max-width: 767px) {
+    .desktop-toolbar {
+        display: none;
+    }
+}
+
 /* utility class to hide panels via JS/CSS */
 .panel-hidden {
     display: none !important;
@@ -47,7 +74,7 @@ dialog {
 .console {
     position: absolute;
     height: calc(200px - 22px);
-    width: calc(100vw - 400px);
+    width: calc(100vw - var(--workspace-right-width, 400px));
     top: calc(100vh - 206px);
     background-color: white;
     overflow: hidden;
@@ -106,7 +133,7 @@ table>tbody>tr:hover {
 .message,
 .onboarding {
     position: absolute;
-    width: calc(100vw - 400px);
+    width: calc(100vw - var(--workspace-right-width, 400px));
     height: calc(100vh - 200px - 29px - 29px);
     background-color: rgba(221, 221, 221, .5);
     display: flex;
@@ -140,7 +167,7 @@ table>tbody>tr:hover {
 
 .editor {
     position: absolute;
-    width: calc(100vw - 410px);
+    width: calc(100vw - var(--workspace-right-width, 400px) - 10px);
     height: calc(100vh - 215px - 29px - 29px);
     background-color: white;
     color: black;
@@ -199,7 +226,7 @@ body>ul[role=menubar] {
         position: fixed;
         top: 56px;
         left: 0;
-        width: 100vw;
+        width: var(--workspace-right-width, 100vw);
         height: calc(100vh - 56px - 80px);
         z-index: 10002;
     }
@@ -208,7 +235,7 @@ body>ul[role=menubar] {
         position: fixed;
         bottom: 56px;
         left: 0;
-        width: 100vw;
+        width: calc(100vw - var(--workspace-right-width, 0px));
         height: calc(40vh);
         z-index: 10002;
     }
