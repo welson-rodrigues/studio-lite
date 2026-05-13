@@ -148,11 +148,9 @@ dialog {
     font-size: 20px;
 }
 
-/* Show movement controls on mobile when in a scene */
-@media (max-width: 767px) {
-    body.ui-loaded .mobile-movement-controls {
-        display: flex;
-    }
+/* Show movement controls when in a scene (both mobile and desktop) */
+body.ui-loaded .mobile-movement-controls {
+    display: flex;
 }
 
 .desktop-toolbar {
