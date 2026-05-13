@@ -233,6 +233,8 @@ async function start() {
 	}
 	delete window.data;
 
+	document.body.classList.add('ui-loaded');
+
 	renderer.toggleAxes(saxes.checked);
 	saxes.addEventListener("input", () => {
 		renderer.toggleAxes(saxes.checked);
@@ -757,6 +759,76 @@ if (desktopBtnConsole) desktopBtnConsole.addEventListener('click', () => toggleP
 if (windowMinimizeButton) windowMinimizeButton.addEventListener('click', () => setCompactMode(!document.body.classList.contains('ui-compact')));
 if (windowMaximizeButton) windowMaximizeButton.addEventListener('click', () => toggleFullscreen());
 if (windowCloseButton) windowCloseButton.addEventListener('click', () => window.location.reload());
+
+// Virtual movement controls for mobile/touch
+const movementControls = {
+	forward: document.getElementById('mobile-move-forward'),
+	backward: document.getElementById('mobile-move-backward'),
+	left: document.getElementById('mobile-move-left'),
+	right: document.getElementById('mobile-move-right'),
+	up: document.getElementById('mobile-move-up'),
+	down: document.getElementById('mobile-move-down')
+};
+
+const movementMapping = {
+	forward: 'KeyW',
+	backward: 'KeyS',
+	left: 'KeyA',
+	right: 'KeyD',
+	up: 'KeyE',
+	down: 'KeyQ'
+};
+
+const pressedKeys = {};
+
+function simulateKeyEvent(key, isDown) {
+	const eventType = isDown ? 'keydown' : 'keyup';
+	const event = new KeyboardEvent(eventType, {
+		code: key,
+		key: key,
+		bubbles: true,
+		cancelable: true
+	});
+	window.dispatchEvent(event);
+	pressedKeys[key] = isDown;
+}
+
+function setupMovementButton(buttonId, keyCode) {
+	const btn = movementControls[buttonId];
+	if (!btn) return;
+
+	function startMovement() {
+		if (!pressedKeys[keyCode]) {
+			simulateKeyEvent(keyCode, true);
+			btn.classList.add('pressed');
+		}
+	}
+
+	function stopMovement() {
+		if (pressedKeys[keyCode]) {
+			simulateKeyEvent(keyCode, false);
+			btn.classList.remove('pressed');
+		}
+	}
+
+	btn.addEventListener('touchstart', (e) => {
+		e.preventDefault();
+		startMovement();
+	});
+
+	btn.addEventListener('touchend', (e) => {
+		e.preventDefault();
+		stopMovement();
+	});
+
+	btn.addEventListener('mousedown', startMovement);
+	btn.addEventListener('mouseup', stopMovement);
+	btn.addEventListener('mouseleave', stopMovement);
+}
+
+Object.entries(movementMapping).forEach(([buttonId, keyCode]) => {
+	setupMovementButton(buttonId, keyCode);
+});
 
 document.addEventListener('fullscreenchange', () => {
 	updateWindowButtons();

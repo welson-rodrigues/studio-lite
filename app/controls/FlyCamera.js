@@ -22,6 +22,44 @@ export default class FlyCamera {
 		domElement.addEventListener('click', () => {
 			this.controls.lock();
 		});
+
+		// Touch support for mobile devices
+		let lastTouchX = 0;
+		let lastTouchY = 0;
+		let isTouchLocked = false;
+
+		domElement.addEventListener('touchstart', (e) => {
+			if (e.touches.length === 1) {
+				lastTouchX = e.touches[0].clientX;
+				lastTouchY = e.touches[0].clientY;
+				if (!this.controls.isLocked) {
+					this.controls.lock();
+					isTouchLocked = true;
+				}
+			}
+		}, { passive: false });
+
+		domElement.addEventListener('touchmove', (e) => {
+			if (e.touches.length === 1 && this.controls.isLocked) {
+				e.preventDefault();
+				const currentX = e.touches[0].clientX;
+				const currentY = e.touches[0].clientY;
+				const movementX = currentX - lastTouchX;
+				const movementY = currentY - lastTouchY;
+
+				// Simulate mouse movement for camera rotation
+				this._applyTouchMovement(movementX, movementY);
+
+				lastTouchX = currentX;
+				lastTouchY = currentY;
+			}
+		}, { passive: false });
+
+		domElement.addEventListener('touchend', (e) => {
+			if (e.touches.length === 0) {
+				isTouchLocked = false;
+			}
+		}, { passive: false });
 		/**
 		 * Sets movement directions based on key presses
 		 */
@@ -75,6 +113,20 @@ export default class FlyCamera {
 			}
 		});
 	}
+
+	_applyTouchMovement(movementX, movementY) {
+		// Simulate mouse movement event for the PointerLockControls
+		// This allows touch swipes to rotate the camera just like mouse movement
+		const fakeEvent = {
+			movementX: movementX,
+			movementY: movementY
+		};
+
+		if (this.controls._onMouseMove) {
+			this.controls._onMouseMove(fakeEvent);
+		}
+	}
+
 	/**
 	 * Updates this.cam position based on movement directions
 	 * @param {number} dt 

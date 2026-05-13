@@ -128,6 +128,22 @@
         <button id="mobile-toggle-properties" class="mobile-btn">Properties</button>
         <button id="mobile-toggle-console" class="mobile-btn">Console</button>
     </div>
+
+    <!-- Virtual movement controls for touch/mobile -->
+    <div id="mobileMovementControls" class="mobile-movement-controls" aria-hidden="true">
+        <div class="movement-joystick">
+            <button id="mobile-move-forward" class="movement-btn forward" aria-label="Move Forward">▲</button>
+            <div class="movement-middle">
+                <button id="mobile-move-left" class="movement-btn left" aria-label="Move Left">◄</button>
+                <button id="mobile-move-backward" class="movement-btn backward" aria-label="Move Backward">▼</button>
+                <button id="mobile-move-right" class="movement-btn right" aria-label="Move Right">►</button>
+            </div>
+            <div class="movement-vertical">
+                <button id="mobile-move-up" class="movement-btn up" aria-label="Move Up">⬆</button>
+                <button id="mobile-move-down" class="movement-btn down" aria-label="Move Down">⬇</button>
+            </div>
+        </div>
+    </div>
     <div class="status-bar">
         <p class="status-bar-field status">Ready</p>
         <div class="status-bar-field flexcenter">
