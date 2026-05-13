@@ -132,15 +132,9 @@
     <!-- Virtual movement controls for touch/mobile -->
     <div id="mobileMovementControls" class="mobile-movement-controls" aria-hidden="true">
         <div class="joystick-container">
-            <!-- D-Pad joystick -->
-            <div class="joystick-dpad">
-                <button id="mobile-move-forward" class="movement-btn forward" aria-label="Move Forward">▲</button>
-                <div class="joystick-middle-row">
-                    <button id="mobile-move-left" class="movement-btn left" aria-label="Move Left">◄</button>
-                    <div class="joystick-center"></div>
-                    <button id="mobile-move-right" class="movement-btn right" aria-label="Move Right">►</button>
-                </div>
-                <button id="mobile-move-backward" class="movement-btn backward" aria-label="Move Backward">▼</button>
+            <!-- Analog joystick for movement -->
+            <div id="joystick" class="joystick-analog">
+                <div id="joystick-inner" class="joystick-inner"></div>
             </div>
             <!-- Vertical movement and zoom -->
             <div class="joystick-side">
@@ -154,6 +148,9 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    </div>
     </div>
     <div class="status-bar">
         <p class="status-bar-field status">Ready</p>

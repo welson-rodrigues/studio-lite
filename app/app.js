@@ -761,24 +761,6 @@ if (windowMaximizeButton) windowMaximizeButton.addEventListener('click', () => t
 if (windowCloseButton) windowCloseButton.addEventListener('click', () => window.location.reload());
 
 // Virtual movement controls for mobile/touch
-const movementControls = {
-	forward: document.getElementById('mobile-move-forward'),
-	backward: document.getElementById('mobile-move-backward'),
-	left: document.getElementById('mobile-move-left'),
-	right: document.getElementById('mobile-move-right'),
-	up: document.getElementById('mobile-move-up'),
-	down: document.getElementById('mobile-move-down')
-};
-
-const movementMapping = {
-	forward: 'KeyW',
-	backward: 'KeyS',
-	left: 'KeyA',
-	right: 'KeyD',
-	up: 'KeyE',
-	down: 'KeyQ'
-};
-
 const pressedKeys = {};
 
 function simulateKeyEvent(key, isDown) {
@@ -793,42 +775,144 @@ function simulateKeyEvent(key, isDown) {
 	pressedKeys[key] = isDown;
 }
 
-function setupMovementButton(buttonId, keyCode) {
-	const btn = movementControls[buttonId];
-	if (!btn) return;
+// Analog joystick control
+const joystick = document.getElementById('joystick');
+const joystickInner = document.getElementById('joystick-inner');
 
-	function startMovement() {
-		if (!pressedKeys[keyCode]) {
-			simulateKeyEvent(keyCode, true);
-			btn.classList.add('pressed');
+if (joystick) {
+	const JOYSTICK_RADIUS = 60;
+	const THUMB_RADIUS = 25;
+	const DEADZONE = 0.2;
+
+	let isJoystickActive = false;
+	let joystickCenterX = 0;
+	let joystickCenterY = 0;
+	const currentPressedKeys = { w: false, a: false, s: false, d: false };
+
+	function updateJoystickPosition(x, y) {
+		const dx = x - joystickCenterX;
+		const dy = y - joystickCenterY;
+		const distance = Math.hypot(dx, dy);
+		const maxDistance = JOYSTICK_RADIUS - THUMB_RADIUS;
+
+		let normalizedX = distance > 0 ? (dx / distance) : 0;
+		let normalizedY = distance > 0 ? (dy / distance) : 0;
+		const normalizedDistance = Math.min(distance / maxDistance, 1);
+
+		if (normalizedDistance < DEADZONE) {
+			// Stop all movement in deadzone
+			if (currentPressedKeys.w) simulateKeyEvent('KeyW', false);
+			if (currentPressedKeys.a) simulateKeyEvent('KeyA', false);
+			if (currentPressedKeys.s) simulateKeyEvent('KeyS', false);
+			if (currentPressedKeys.d) simulateKeyEvent('KeyD', false);
+			currentPressedKeys.w = false;
+			currentPressedKeys.a = false;
+			currentPressedKeys.s = false;
+			currentPressedKeys.d = false;
+		} else {
+			// Check forward/backward
+			if (normalizedY < -0.4) {
+				if (!currentPressedKeys.w) simulateKeyEvent('KeyW', true);
+				currentPressedKeys.w = true;
+			} else if (currentPressedKeys.w) {
+				simulateKeyEvent('KeyW', false);
+				currentPressedKeys.w = false;
+			}
+
+			if (normalizedY > 0.4) {
+				if (!currentPressedKeys.s) simulateKeyEvent('KeyS', true);
+				currentPressedKeys.s = true;
+			} else if (currentPressedKeys.s) {
+				simulateKeyEvent('KeyS', false);
+				currentPressedKeys.s = false;
+			}
+
+			// Check left/right
+			if (normalizedX < -0.4) {
+				if (!currentPressedKeys.a) simulateKeyEvent('KeyA', true);
+				currentPressedKeys.a = true;
+			} else if (currentPressedKeys.a) {
+				simulateKeyEvent('KeyA', false);
+				currentPressedKeys.a = false;
+			}
+
+			if (normalizedX > 0.4) {
+				if (!currentPressedKeys.d) simulateKeyEvent('KeyD', true);
+				currentPressedKeys.d = true;
+			} else if (currentPressedKeys.d) {
+				simulateKeyEvent('KeyD', false);
+				currentPressedKeys.d = false;
+			}
 		}
+
+		// Move thumb visually
+		const thumbX = (dx / distance) * Math.min(distance, maxDistance);
+		const thumbY = (dy / distance) * Math.min(distance, maxDistance);
+		joystickInner.style.transform = `translate(${thumbX}px, ${thumbY}px)`;
 	}
 
-	function stopMovement() {
-		if (pressedKeys[keyCode]) {
-			simulateKeyEvent(keyCode, false);
-			btn.classList.remove('pressed');
-		}
-	}
+	joystick.addEventListener('touchstart', (e) => {
+		if (e.touches.length !== 1) return;
+		isJoystickActive = true;
+		const rect = joystick.getBoundingClientRect();
+		joystickCenterX = rect.left + rect.width / 2;
+		joystickCenterY = rect.top + rect.height / 2;
+		joystickInner.classList.add('active');
+		updateJoystickPosition(e.touches[0].clientX, e.touches[0].clientY);
+	}, { passive: false });
 
-	btn.addEventListener('touchstart', (e) => {
+	joystick.addEventListener('touchmove', (e) => {
+		if (!isJoystickActive || e.touches.length !== 1) return;
 		e.preventDefault();
-		startMovement();
+		updateJoystickPosition(e.touches[0].clientX, e.touches[0].clientY);
+	}, { passive: false });
+
+	joystick.addEventListener('touchend', (e) => {
+		isJoystickActive = false;
+		joystickInner.classList.remove('active');
+		joystickInner.style.transform = 'translate(0, 0)';
+		// Stop all movement
+		if (currentPressedKeys.w) simulateKeyEvent('KeyW', false);
+		if (currentPressedKeys.a) simulateKeyEvent('KeyA', false);
+		if (currentPressedKeys.s) simulateKeyEvent('KeyS', false);
+		if (currentPressedKeys.d) simulateKeyEvent('KeyD', false);
+		currentPressedKeys.w = false;
+		currentPressedKeys.a = false;
+		currentPressedKeys.s = false;
+		currentPressedKeys.d = false;
 	});
 
-	btn.addEventListener('touchend', (e) => {
-		e.preventDefault();
-		stopMovement();
+	// Mouse support for desktop testing
+	joystick.addEventListener('mousedown', (e) => {
+		isJoystickActive = true;
+		const rect = joystick.getBoundingClientRect();
+		joystickCenterX = rect.left + rect.width / 2;
+		joystickCenterY = rect.top + rect.height / 2;
+		joystickInner.classList.add('active');
+		updateJoystickPosition(e.clientX, e.clientY);
 	});
 
-	btn.addEventListener('mousedown', startMovement);
-	btn.addEventListener('mouseup', stopMovement);
-	btn.addEventListener('mouseleave', stopMovement);
+	document.addEventListener('mousemove', (e) => {
+		if (!isJoystickActive) return;
+		updateJoystickPosition(e.clientX, e.clientY);
+	});
+
+	document.addEventListener('mouseup', () => {
+		if (!isJoystickActive) return;
+		isJoystickActive = false;
+		joystickInner.classList.remove('active');
+		joystickInner.style.transform = 'translate(0, 0)';
+		// Stop all movement
+		if (currentPressedKeys.w) simulateKeyEvent('KeyW', false);
+		if (currentPressedKeys.a) simulateKeyEvent('KeyA', false);
+		if (currentPressedKeys.s) simulateKeyEvent('KeyS', false);
+		if (currentPressedKeys.d) simulateKeyEvent('KeyD', false);
+		currentPressedKeys.w = false;
+		currentPressedKeys.a = false;
+		currentPressedKeys.s = false;
+		currentPressedKeys.d = false;
+	});
 }
-
-Object.entries(movementMapping).forEach(([buttonId, keyCode]) => {
-	setupMovementButton(buttonId, keyCode);
-});
 
 // Zoom controls
 const zoomInBtn = document.getElementById('mobile-zoom-in');
